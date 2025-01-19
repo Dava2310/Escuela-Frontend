@@ -67,6 +67,20 @@ const data = {
       ],
     },
     {
+      title: "Horarios",
+      url: "#",
+      items: [
+        {
+          title: "Gestionar Horarios",
+          url: "#",
+        },
+        {
+          title: "Crear Horarios",
+          url: "/admin/schedules/new",
+        },
+      ],
+    },
+    {
       title: "Cursos",
       url: "#",
       items: [
@@ -76,7 +90,7 @@ const data = {
         },
         {
           title: "Crear Curso",
-          url: "#",
+          url: "/admin/courses/new",
         },
       ],
     },
