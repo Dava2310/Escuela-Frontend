@@ -1,3 +1,9 @@
+"use client"
+
+import useAuthCheck from "../../hooks/useAuthCheck"; // Importa el hook
+import useIsStudent from "@/app/hooks/useIsStudent";
+
+import UserMenu from "@/components/UserMenu";
 import { AppSidebar } from "@/components/app-sidebar-student"
 import {
   Breadcrumb,
@@ -15,6 +21,13 @@ import {
 } from "@/components/ui/sidebar"
 
 export default function Page() {
+
+  // Verifica si el usuario está autenticado
+  useAuthCheck();
+
+  // Verifica si el usuario es de tipo estudiante
+  useIsStudent();
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -26,23 +39,22 @@ export default function Page() {
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
                 <BreadcrumbLink href="#">
-                  Building Your Application
+                  Inicio
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                <BreadcrumbPage>Dashboard</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+          <div className="w-full flex-1">
+
+          </div>
+          <UserMenu />
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-          </div>
-          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+          <h1>Hola</h1>
         </div>
       </SidebarInset>
     </SidebarProvider>
