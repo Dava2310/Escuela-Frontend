@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -8,7 +10,6 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { CalendarIcon, Clock } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-// import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -41,140 +42,215 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { toast } from "sonner";
 
 const diasSemana = [
-  { id: 'lunes', label: 'Lunes' },
-  { id: 'martes', label: 'Martes' },
-  { id: 'miercoles', label: 'Miércoles' },
-  { id: 'jueves', label: 'Jueves' },
-  { id: 'viernes', label: 'Viernes' },
-  { id: 'sabado', label: 'Sábado' },
-  { id: 'domingo', label: 'Domingo' },
+  { id: 'Lunes', label: 'Lunes' },
+  { id: 'Martes', label: 'Martes' },
+  { id: 'Miércoles', label: 'Miércoles' },
+  { id: 'Jueves', label: 'Jueves' },
+  { id: 'Viernes', label: 'Viernes' },
+  { id: 'Sábado', label: 'Sábado' },
+  { id: 'Domingo', label: 'Domingo' },
 ]
+
+import ip from "../../app/constants/constants.js";
+import axios from 'axios'
 
 const formSchema = z.object({
   cursoId: z.string({
     required_error: 'Por favor seleccione un curso.',
   }),
+  seccionId: z.string({
+    required_error: "Por favor seleccione una sección.",
+  }),
   fechaInicio: z.date({
     required_error: 'La fecha de inicio es requerida.',
   }),
-  fechaFin: z.date({
+  fechaFinal: z.date({
     required_error: 'La fecha de finalización es requerida.',
   }),
   horaInicio: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
     message: 'Formato de hora inválido. Use HH:MM.',
   }),
-  horaFin: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+  horaFinal: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
     message: 'Formato de hora inválido. Use HH:MM.',
   }),
-  salon: z.string().min(1, 'El salón es requerido.'),
   diasRepeticion: z.array(z.string()).optional(),
-  capacidad: z.number().int().positive().optional(),
-}).refine((data) => data.fechaInicio <= data.fechaFin, {
+  tipo: z.string(),
+}).refine((data) => data.fechaInicio <= data.fechaFinal, {
   message: 'La fecha de inicio debe ser anterior o igual a la fecha de finalización.',
   path: ['fechaFin'],
 }).refine((data) => {
   const inicio = new Date(`1970-01-01T${data.horaInicio}:00`)
-  const fin = new Date(`1970-01-01T${data.horaFin}:00`)
+  const fin = new Date(`1970-01-01T${data.horaFinal}:00`)
   return inicio < fin
 }, {
   message: 'La hora de inicio debe ser anterior a la hora de finalización.',
   path: ['horaFin'],
 })
 
+interface Seccion {
+  id: number
+  codigo: string
+  capacidad: number
+  salon: string
+  profesorId: number
+  cursoId: number
+  horarioId: number | null
+  estudiantes: any[]
+}
+
 interface Curso {
-  id: string;
-  nombre: string;
+  id: number
+  nombre: string
+  codigo: string
+  descripcion: string
+  categoria: string
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
+  secciones: Seccion[]
+  estado: string
+  matricula: number
 }
 
 export function CrearHorarioForm() {
-  const [isLoadingCursos, setIsLoadingCursos] = useState(true)
-  const [errorCursos, setErrorCursos] = useState<string | null>(null)
+
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       cursoId: '',
+      seccionId: "",
       fechaInicio: new Date(),
-      fechaFin: new Date(),
+      fechaFinal: new Date(),
       horaInicio: '',
-      horaFin: '',
-      salon: '',
+      horaFinal: '',
       diasRepeticion: [],
-      capacidad: undefined,
+      tipo: ''
     },
   })
 
+  const [cursos, setCursos] = useState<Curso[]>([])
+
   useEffect(() => {
     const fetchCursos = async () => {
-      setIsLoadingCursos(true)
-      setErrorCursos(null)
       try {
-        // Simular una llamada a la API
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        // Datos de ejemplo
-        const cursosData: Curso[] = [
-          { id: '1', nombre: 'Matemáticas Avanzadas' },
-          { id: '2', nombre: 'Introducción a la Programación' },
-          { id: '3', nombre: 'Historia del Arte' },
-          { id: '4', nombre: 'Física Cuántica' },
-        ]
-        setCursos(cursosData)
-      } catch {
-        setErrorCursos('Error al cargar los cursos. Por favor, intente de nuevo.')
-      } finally {
-        setIsLoadingCursos(false)
+
+        const accessToken = localStorage.getItem("accessToken");
+        const config = {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+
+        const response = await axios.get(`${ip}/api/courses/`, config);
+        setCursos(response.data.body.data)
+      } catch (error) {
+        console.error(error)
       }
     }
 
     fetchCursos()
   }, [])
 
+  const seccionesDelCursoSeleccionado =
+    cursos.find((curso) => curso.id.toString() === form.watch("cursoId"))?.secciones || []
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Simular una llamada a la API
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    console.log(values)
-    form.reset()
+    try {
+      // Obteniendo el token de acceso
+      const accessToken = localStorage.getItem("accessToken");
+      const config = {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      };
+
+      toast.promise(axios.post(`${ip}/api/schedules/`, values, config), {
+        loading: 'Cargando...',
+        duration: Infinity,
+        success: (response) => {
+          router.push('/admin/dashboard')
+          return `${response.data.body.message}`;
+        },
+        error: (error) => {
+          console.error(error)
+          return `${error.response?.data?.body?.message}`;
+        }
+      })
+
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  const [cursos, setCursos] = useState<Curso[]>([])
+
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <Card>
           <CardHeader>
-            <CardTitle>Selección de Curso</CardTitle>
-            <CardDescription>Elija el curso para el cual desea crear el horario.</CardDescription>
+            <CardTitle>Selección de Curso y Sección</CardTitle>
+            <CardDescription>Elija el curso y la sección para la cual desea crear el horario.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <FormField
               control={form.control}
               name="cursoId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Curso</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value)
+                      form.setValue("seccionId", "") // Reset sección when curso changes
+                    }}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione un curso" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {isLoadingCursos ? (
-                        <SelectItem value="loading" disabled>
-                          Cargando cursos...
-                        </SelectItem>
-                      ) : errorCursos ? (
-                        <SelectItem value="error" disabled>
-                          {errorCursos}
+                      {
+                        cursos.map((curso) => (
+                          <SelectItem key={curso.id.toString()} value={curso.id.toString()}>
+                            {curso.nombre}
+                          </SelectItem>
+                        ))
+                      }
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="seccionId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sección</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione una sección" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {seccionesDelCursoSeleccionado.length === 0 ? (
+                        <SelectItem value="no-sections" disabled>
+                          Seleccione un curso primero
                         </SelectItem>
                       ) : (
-                        cursos.map((curso) => (
-                          <SelectItem key={curso.id} value={curso.id}>
-                            {curso.nombre}
+                        seccionesDelCursoSeleccionado.map((seccion) => (
+                          <SelectItem key={seccion.id.toString()} value={seccion.id.toString()}>
+                            {seccion.codigo} (Capacidad: {seccion.capacidad}, Salón: {seccion.salon})
                           </SelectItem>
                         ))
                       )}
@@ -237,7 +313,7 @@ export function CrearHorarioForm() {
               />
               <FormField
                 control={form.control}
-                name="fechaFin"
+                name="fechaFinal"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Fecha de Finalización</FormLabel>
@@ -299,7 +375,7 @@ export function CrearHorarioForm() {
               />
               <FormField
                 control={form.control}
-                name="horaFin"
+                name="horaFinal"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Hora de Finalización</FormLabel>
@@ -326,19 +402,29 @@ export function CrearHorarioForm() {
             <CardDescription>Especifica el salón y otros detalles del horario.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6">
+
             <FormField
               control={form.control}
-              name="salon"
+              name="tipo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Salón</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ej: Aula 101" {...field} />
-                  </FormControl>
+                  <FormLabel>Modalidad</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione una modalidad" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value='Presencial'>Presencial</SelectItem>
+                      <SelectItem value='Virtual'>Virtual</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="diasRepeticion"
@@ -369,10 +455,10 @@ export function CrearHorarioForm() {
                                     return checked
                                       ? field.onChange([...field.value || [], dia.id])
                                       : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== dia.id
-                                          )
+                                        field.value?.filter(
+                                          (value) => value !== dia.id
                                         )
+                                      )
                                   }}
                                 />
                               </FormControl>
@@ -389,27 +475,7 @@ export function CrearHorarioForm() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="capacidad"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Capacidad (opcional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Ej: 30"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Número máximo de participantes. Deje en blanco si no hay límite.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
           </CardContent>
         </Card>
 

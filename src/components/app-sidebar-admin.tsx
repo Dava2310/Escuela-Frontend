@@ -72,7 +72,7 @@ const data = {
       items: [
         {
           title: "Gestionar Horarios",
-          url: "#",
+          url: "/admin/schedules",
         },
         {
           title: "Crear Horarios",
@@ -86,7 +86,7 @@ const data = {
       items: [
         {
           title: "Gestionar Cursos",
-          url: "#",
+          url: "/admin/courses",
         },
         {
           title: "Crear Curso",

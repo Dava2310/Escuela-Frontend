@@ -20,6 +20,8 @@ import {
     SidebarTrigger,
 } from "@/components/ui/sidebar"
 
+import HorarioViewer from "@/components/schedules/schedule-viewer"
+
 export default function Page() {
 
     // Verifica si el usuario está autenticado
@@ -39,12 +41,12 @@ export default function Page() {
                         <BreadcrumbList>
                             <BreadcrumbItem className="hidden md:block">
                                 <BreadcrumbLink href="#">
-                                    Inicio
+                                    Horarios
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator className="hidden md:block" />
                             <BreadcrumbItem>
-                                <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                                <BreadcrumbPage>Gestionar</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
@@ -54,7 +56,7 @@ export default function Page() {
                     <UserMenu />
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4">
-                    <h1>Hola</h1>
+                    <HorarioViewer/>
                 </div>
                 
             </SidebarInset>

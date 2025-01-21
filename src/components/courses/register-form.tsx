@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation"; // Cambiar la importación aquí
 import { useForm } from 'react-hook-form'
-import { useEffect, useState } from "react"
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Input } from '@/components/ui/input'
@@ -34,26 +33,13 @@ const formSchema = z.object({
     nombre: z.string().min(1, 'El nombre es requerido'),
     codigo: z.string().min(1, 'El código es requerido'),
     descripcion: z.string().optional(),
-    profesorId: z.string().min(1, 'El profesor es requerido'),
+    categoria: z.string()
 })
-
-type Profesor = {
-    id: bigint,
-    nombre: string,
-    apellido: string,
-    cedula: string,
-    email: string,
-    profesion: string,
-    numeroTelefono: string,
-    fechaNacimiento: string,
-    direccion: string,
-}
 
 import ip from "../../app/constants/constants.js";
 
 export function CrearCursoForm() {
 
-    const [profesores, setProfesores] = useState<Profesor[]>([])
 
     // Router de navegacion
     const router = useRouter();
@@ -64,30 +50,8 @@ export function CrearCursoForm() {
             nombre: '',
             codigo: '',
             descripcion: '',
-            profesorId: '',
         },
     })
-
-    // Cargando de la tabla de profesores
-    useEffect(() => {
-        const fetchData_Teachers = async () => {
-            try {
-                const accessToken = localStorage.getItem("accessToken");
-                const config = {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                }
-
-                const response = await axios.get(`${ip}/api/teachers/`, config)
-                setProfesores(response.data.body.data);
-
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        fetchData_Teachers();
-    }, []);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
@@ -104,7 +68,7 @@ export function CrearCursoForm() {
                 loading: 'Cargando...',
                 duration: Infinity,
                 success: (response) => {
-                    router.push('/admin/dashboard')
+                    router.push('/admin/courses')
                     return `${response.data.body.message}`;
                 },
                 error: (error) => {
@@ -176,26 +140,26 @@ export function CrearCursoForm() {
 
                     <FormField
                         control={form.control}
-                        name="profesorId"
+                        name="categoria"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Profesor</FormLabel>
+                                <FormLabel>Categoria</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Seleccione un profesor" />
+                                            <SelectValue placeholder="Seleccione una categoria" />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        {profesores.map((profesor) => (
-                                            <SelectItem key={profesor.id.toString()} value={profesor.id.toString()}>
-                                                {profesor.nombre + " " + profesor.apellido}
-                                            </SelectItem>
-                                        ))}
+                                        <SelectItem value="Programación">Programación</SelectItem>
+                                        <SelectItem value="Diseño">Diseño</SelectItem>
+                                        <SelectItem value="Marketing">Marketing</SelectItem>
+                                        <SelectItem value="Ciencia de Datos">Ciencia de Datos</SelectItem>
+                                        <SelectItem value="Arte">Arte</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormDescription>
-                                    Asigne un profesor para este curso.
+                                    Asigne una categoría para este curso.
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>
