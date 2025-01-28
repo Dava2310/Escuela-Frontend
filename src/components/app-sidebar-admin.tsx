@@ -100,7 +100,17 @@ const data = {
       items: [
         {
           title: "Gestionar Inscripciones",
-          url: "#",
+          url: "/admin/inscriptions",
+        },
+      ],
+    },
+    {
+      title: "Estadísticas",
+      url: "#",
+      items: [
+        {
+          title: "Visualizar Estadísticas",
+          url: "/admin/statistics",
         },
       ],
     },

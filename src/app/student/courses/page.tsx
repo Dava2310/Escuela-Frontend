@@ -32,7 +32,7 @@ type Curso = {
     codigo: string
     descripcion: string
     categoria: string
-    inscrito: boolean
+    inscrito: string
 }
 
 import axios from "axios"
@@ -57,7 +57,7 @@ export default function Page() {
     useEffect(() => {
         const fetchCursos = async () => {
             try {
-                
+
                 // Consiguiendo el token de acceso
                 const accessToken = localStorage.getItem("accessToken");
                 const config = {
@@ -117,10 +117,21 @@ export default function Page() {
                                 <CardContent className="flex-grow">
                                     <p className="text-sm mb-4">{curso.descripcion}</p>
                                     <div className="flex items-center justify-between">
-                                        <span className={`text-sm font-medium ${curso.inscrito ? "text-green-600" : "text-yellow-600"}`}>
-                                            {curso.inscrito ? "Inscrito" : "No inscrito"}
+                                        <span
+                                            className={`text-sm font-medium ${curso.inscrito === "Aprobada"
+                                                    ? "text-green-600"
+                                                    : curso.inscrito === "En Espera"
+                                                        ? "text-yellow-600"
+                                                        : "text-red-600"
+                                                }`}
+                                        >
+                                            {curso.inscrito === "Aprobada"
+                                                ? "Inscrito"
+                                                : curso.inscrito === "En Espera"
+                                                    ? "En Espera"
+                                                    : "No Inscrito"}
                                         </span>
-                                        {!curso.inscrito && (
+                                        {curso.inscrito === "No Inscrito" && (
                                             <Button
                                                 onClick={() => handleInscripcion(curso.id)}
                                                 className="bg-primary text-primary-foreground hover:bg-primary/90"

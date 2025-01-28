@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import useAuthCheck from "../../hooks/useAuthCheck"; // Importa el hook
@@ -25,25 +24,25 @@ import { useEffect } from "react";
 
 // Librerias para la tabla de datos
 import { DataTable } from "./data-table";
-import { useEstudiantes, EstudiantesProvider } from "./StudentsContext"
+import { useInscripciones, InscripcionesProvider} from "./InscriptionsContext"
 import { columns } from "./columns"
 
-const ListEstudiantes = () => {
+const ListInscripciones = () => {
 
     // Verifica si el usuario está autenticado
     useAuthCheck();
 
     // Verifica si el usuario es de tipo administrador
-    useIsAdmin();
+    useIsAdmin(); 
 
-    const { estudiantes, fetchEstudiantes } = useEstudiantes();
+    const { inscripciones, fetchInscripciones } = useInscripciones();
 
     useEffect(() => {
         // Asegúrate de que se ejecute solo en el cliente
         if (typeof window !== 'undefined') {
-            fetchEstudiantes(); // Obtiene los choferes al cargar la página
+            fetchInscripciones(); // Obtiene los profesores al cargar la página
         }
-    }, [fetchEstudiantes])
+    }, [fetchInscripciones])
 
     return (
         <SidebarProvider>
@@ -56,13 +55,13 @@ const ListEstudiantes = () => {
                         <BreadcrumbList>
                             <BreadcrumbItem className="hidden md:block">
                                 <BreadcrumbLink href="#">
-                                    Inicio
+                                    Inscripciones
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
-                            {/* <BreadcrumbSeparator className="hidden md:block" />
+                            <BreadcrumbSeparator className="hidden md:block" />
                             <BreadcrumbItem>
-                                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                            </BreadcrumbItem> */}
+                                <BreadcrumbPage>Gestionar</BreadcrumbPage>
+                            </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
                     <div className="w-full flex-1">
@@ -72,12 +71,12 @@ const ListEstudiantes = () => {
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4">
                     <h1 className="text-4xl font-bold text-center text-blue-500">
-                        Lista de Estudiantes
+                        Lista de Inscripciones
                     </h1>
 
                     <div className="container mx-auto">
-                        <DataTable columns={columns} data={estudiantes} />
-                    </div>
+                <DataTable columns={columns} data={inscripciones} />
+            </div>
                 </div>
             </SidebarInset>
         </SidebarProvider>
@@ -86,8 +85,7 @@ const ListEstudiantes = () => {
 
 export default function Page() {
     return (
-        <EstudiantesProvider>
-            <ListEstudiantes />
-        </EstudiantesProvider>
-    )
-}
+        <InscripcionesProvider>
+            <ListInscripciones />
+        </InscripcionesProvider>
+    )}

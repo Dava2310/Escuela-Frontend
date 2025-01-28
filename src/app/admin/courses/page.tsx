@@ -190,8 +190,13 @@ export default function Page() {
                                     </Badge>
                                 </CardContent>
                                 <CardFooter className="flex justify-end mt-auto">
+
                                     <Button variant="outline" size="sm" asChild className="mr-2">
-                                        <Link href={`/admin/secciones/${curso.id}`}>Crear Sección</Link>
+                                        <Link href={`/admin/secciones/${curso.id}`}>Ver Secciones</Link>
+                                    </Button>
+
+                                    <Button variant="outline" size="sm" asChild className="mr-2">
+                                        <Link href={`/admin/secciones/new/${curso.id}`}>Crear Sección</Link>
                                     </Button>
                                     <EditarCursoModal curso={curso} onSave={handleEditarCurso} />
                                     <Button

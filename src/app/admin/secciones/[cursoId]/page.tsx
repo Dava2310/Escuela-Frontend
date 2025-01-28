@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import useAuthCheck from "../../../hooks/useAuthCheck"; // Importa el hook
-import useIsAdmin from '../../../hooks/useIsAdmin';
-import ip from '@/app/constants/constants';
+import useAuthCheck from "@/app/hooks/useAuthCheck";
+import useIsAdmin from "@/app/hooks/useIsAdmin";
+
 import UserMenu from "@/components/UserMenu";
 import { AppSidebar } from "@/components/app-sidebar-admin"
 import {
@@ -21,32 +22,42 @@ import {
 } from "@/components/ui/sidebar"
 
 import { useState, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
 import { useForm } from "react-hook-form"
+import { useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import axios from "axios"
-import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import axios from "axios";
+import ip from "@/app/constants/constants";
 
-const formSchema = z.object({
+// Definición del esquema de validación para el formulario de sección
+const seccionSchema = z.object({
+    id: z.number(),
     codigo: z.string().min(1, "El código es requerido"),
     capacidad: z.number().min(1, "La capacidad debe ser al menos 1"),
     salon: z.string().min(1, "El salón es requerido"),
     profesorId: z.string().min(1, "Debe seleccionar un profesor"),
 })
 
-interface Profesor {
-    id: string
-    nombre: string
-    apellido: string
-}
+// Tipos
+type Seccion = z.infer<typeof seccionSchema>
+type Profesor = { id: string; nombre: string }
 
-export default function CrearSeccionPage() {
+const profesoresPrueba: Profesor[] = [
+    { id: "1", nombre: "Ana García" },
+    { id: "2", nombre: "Carlos Pérez" },
+    { id: "3", nombre: "Laura Martínez" },
+]
+
+// Funcionalidad para los estudiantes
+import { DataTable } from "./data-table";
+import { useEstudiantes, EstudiantesProvider } from "./StudentsContext"
+import { columns } from "./columns"
+
+const ListSecciones = () => {
 
     // Verifica si el usuario está autenticado
     useAuthCheck();
@@ -54,16 +65,45 @@ export default function CrearSeccionPage() {
     // Verifica si el usuario es de tipo administrador
     useIsAdmin();
 
-    const router = useRouter()
-    const [profesores, setProfesores] = useState<Profesor[]>([])
-    
-    // Parametro para el cursoId
+    // CursoID
     const params = useParams();
     const cursoId = params.cursoId
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    // Carga de las secciones
+    const [secciones, setSecciones] = useState<Seccion[]>([])
+
+    useEffect(() => {
+
+        const fetchSecciones = async () => {
+            try {
+                const accessToken = localStorage.getItem("accessToken");
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                };
+
+                const response = await axios.get(`${ip}/api/secciones/${cursoId}`, config);
+                setSecciones(response.data.body.data as Seccion[])
+
+            } catch (error: any) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        fetchSecciones();
+
+    }, [cursoId])
+
+
+    const [seccionSeleccionada, setSeccionSeleccionada] = useState<Seccion | null>(null)
+
+    const { estudiantes, fetchEstudiantes } = useEstudiantes();
+
+    const form = useForm<Seccion>({
+        resolver: zodResolver(seccionSchema),
         defaultValues: {
+            id: 0,
             codigo: "",
             capacidad: 0,
             salon: "",
@@ -71,64 +111,25 @@ export default function CrearSeccionPage() {
         },
     })
 
-    useEffect(() => {
-
-        const fetchTeachers = async () => {
-            try {
-
-                // Consiguiendo el token de acceso
-                const accessToken = localStorage.getItem("accessToken");
-                const config = {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                    },
-                };
-                const response = await axios.get(`${ip}/api/teachers`, config);
-                setProfesores(response.data.body.data as Profesor[]);
-
-            } catch (error) {
-                console.error(error)
-            }
-        }
-        fetchTeachers();
-    }, [])
-
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        try {
-            // Obteniendo el token de acceso
-            const accessToken = localStorage.getItem("accessToken");
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            };
-
-            const newValues = {
-                codigo: values.codigo,
-                capacidad: values.capacidad,
-                salon: values.salon,
-                profesorId: values.profesorId,
-                cursoId: cursoId
-            }
-
-            toast.promise(axios.post(`${ip}/api/secciones/`, newValues, config), {
-                loading: 'Cargando...',
-                duration: Infinity,
-                success: (response) => {
-                    router.push("/admin/courses");
-                    return `${response.data.body.message}`;
-                },
-                error: (error) => {
-                    console.log(error);
-                    return `${error.response?.data?.body?.message}`;
-                }
-            })
-
-
-        } catch (error) {
-            console.error(error)
+    const onSubmit = (values: Seccion) => {
+        if (seccionSeleccionada) {
+            // Actualizar sección existente
+            setSecciones(secciones.map((s) => (s.id === values.id ? values : s)))
+            setSeccionSeleccionada(values)
         }
     }
+
+    const seleccionarSeccion = (seccion: Seccion | null) => {
+        console.log("Sección seleccionada:", seccion); // Verifica si la sección tiene los datos correctos
+        setSeccionSeleccionada(seccion)
+        if (seccion) {
+            fetchEstudiantes(seccion.id)
+            form.reset(seccion)
+        } else {
+            form.reset()
+        }
+    }
+
 
     return (
         <SidebarProvider>
@@ -141,12 +142,12 @@ export default function CrearSeccionPage() {
                         <BreadcrumbList>
                             <BreadcrumbItem className="hidden md:block">
                                 <BreadcrumbLink href="#">
-                                    Cursos
+                                    Inicio
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator className="hidden md:block" />
                             <BreadcrumbItem>
-                                <BreadcrumbPage>Registrar</BreadcrumbPage>
+                                <BreadcrumbPage>Dashboard</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
@@ -156,83 +157,133 @@ export default function CrearSeccionPage() {
                     <UserMenu />
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4">
-                    <h1 className="text-3xl font-bold mb-6">Crear Nueva Sección</h1>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                            <FormField
-                                control={form.control}
-                                name="codigo"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Código</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Ej: SEC001" {...field} />
-                                        </FormControl>
-                                        <FormDescription>Ingrese el código único para esta sección.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="capacidad"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Capacidad</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" {...field} onChange={(e) => field.onChange(Number.parseInt(e.target.value))} />
-                                        </FormControl>
-                                        <FormDescription>Ingrese la capacidad máxima de estudiantes para esta sección.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="salon"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Salón</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Ej: Aula 101" {...field} />
-                                        </FormControl>
-                                        <FormDescription>Ingrese el salón asignado para esta sección.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="profesorId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Profesor</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Seleccione un profesor" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {profesores.map((profesor) => (
-                                                    <SelectItem key={profesor.id.toString()} value={profesor.id.toString()}>
-                                                        {profesor.nombre + " " + profesor.apellido}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormDescription>Seleccione el profesor para esta sección.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                    <h1 className="text-3xl font-bold mb-6">Secciones del Curso</h1>
 
-                            <Button type="submit">Crear Sección</Button>
-                        </form>
-                    </Form>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h2 className="text-2xl font-semibold mb-4">Seleccionar Sección</h2>
+                            <Select onValueChange={(value) => {
+                                const selectedId = Number(value); // Convierte el valor a number
+                                const selectedSeccion = secciones.find((s) => s.id === selectedId); // Busca la sección
+
+                                console.log("Valor seleccionado:", value); // Verifica el valor
+                                console.log("Sección encontrada:", selectedSeccion); // Verifica la sección encontrada
+
+                                seleccionarSeccion(selectedSeccion || null); // Llama a la función para actualizar la sección seleccionada
+                            }}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Seleccione una sección" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {secciones.map((seccion) => (
+                                        <SelectItem key={seccion.id.toString()} value={seccion.id.toString()}>
+                                            {seccion.codigo} - {seccion.salon}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div>
+                            <h2 className="text-2xl font-semibold mb-4">
+                                {seccionSeleccionada
+                                    ? `Editar Sección: ${seccionSeleccionada.codigo}`
+                                    : "Seleccione una sección para editar"}
+                            </h2>
+                            <Form {...form}>
+                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="codigo"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Código</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="capacidad"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Capacidad</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="salon"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Salón</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="profesorId"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Profesor</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Seleccione un profesor" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {profesoresPrueba.map((profesor) => (
+                                                            <SelectItem key={profesor.id} value={profesor.id}>
+                                                                {profesor.nombre}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <Button type="submit" disabled={!seccionSeleccionada}>
+                                        Actualizar Sección
+                                    </Button>
+
+
+                                </form>
+                            </Form>
+                        </div>
+                    </div>
+                    <div className="mt-10">
+                        <h1 className="text-4xl font-bold text-center text-blue-500">
+                            Lista de Estudiantes
+                        </h1>
+
+                        <div className="container mx-auto mt-4">
+                            <DataTable columns={columns} data={estudiantes} />
+                        </div>
+                    </div>
                 </div>
-                <Toaster richColors closeButton expand />
+
             </SidebarInset>
         </SidebarProvider>
+    )
+}
+
+export default function Page() {
+    return (
+        <EstudiantesProvider>
+            <ListSecciones />
+        </EstudiantesProvider>
     )
 }
