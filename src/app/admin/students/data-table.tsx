@@ -17,8 +17,6 @@ import {
     useReactTable,
 } from "@tanstack/react-table"
 
-import Link from "next/link"
-
 import {
     Table,
     TableBody,
@@ -173,11 +171,6 @@ export function DataTable<TData, TValue>({
             </div>
 
             <div className="flex items-center justify-end space-x-2 py-4">
-                <Link href="/pages/choferes/new" passHref>
-                    <Button disabled variant="outline" className="ml-auto">
-                        Crear un nuevo estudiante
-                    </Button>
-                </Link>
                 <Button
                     variant="outline"
                     size="sm"

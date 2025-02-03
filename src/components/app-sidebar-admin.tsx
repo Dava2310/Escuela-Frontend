@@ -45,11 +45,6 @@ const data = {
           title: "Gestionar Estudiantes",
           url: "/admin/students/",
         },
-        {
-          title: "Registrar Estudiante",
-          url: "#",
-          isActive: true,
-        },
       ],
     },
     {
@@ -67,20 +62,6 @@ const data = {
       ],
     },
     {
-      title: "Horarios",
-      url: "#",
-      items: [
-        {
-          title: "Gestionar Horarios",
-          url: "/admin/schedules",
-        },
-        {
-          title: "Crear Horarios",
-          url: "/admin/schedules/new",
-        },
-      ],
-    },
-    {
       title: "Cursos",
       url: "#",
       items: [
@@ -94,6 +75,21 @@ const data = {
         },
       ],
     },
+    {
+      title: "Horarios",
+      url: "#",
+      items: [
+        {
+          title: "Gestionar Horarios",
+          url: "/admin/schedules",
+        },
+        {
+          title: "Crear Horarios",
+          url: "/admin/schedules/new",
+        },
+      ],
+    },
+    
     {
       title: "Inscripciones",
       url: "#",
@@ -120,11 +116,7 @@ const data = {
       items: [
         {
           title: "Gestionar Certificados",
-          url: "#",
-        },
-        {
-          title: "Generar Certificado",
-          url: "#",
+          url: "/admin/certificates",
         },
       ],
     },
@@ -154,10 +146,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {data.navMain.map((item, index) => (
+            {data.navMain.map((item) => (
               <Collapsible
                 key={item.title}
-                defaultOpen={index === 1}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
@@ -175,7 +166,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           <SidebarMenuSubItem key={item.title}>
                             <SidebarMenuSubButton
                               asChild
-                              isActive={item.isActive}
                             >
                               <a href={item.url}>{item.title}</a>
                             </SidebarMenuSubButton>
