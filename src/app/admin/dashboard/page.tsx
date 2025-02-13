@@ -20,13 +20,15 @@ import {
     SidebarTrigger,
 } from "@/components/ui/sidebar"
 
+import Image from "next/image";
+
 export default function Page() {
 
     // Verifica si el usuario está autenticado
     useAuthCheck();
 
     // Verifica si el usuario es de tipo administrador
-    useIsAdmin(); 
+    useIsAdmin();
 
     return (
         <SidebarProvider>
@@ -53,10 +55,21 @@ export default function Page() {
                     </div>
                     <UserMenu />
                 </header>
-                <div className="flex flex-1 flex-col gap-4 p-4">
-                    <h1>Hola</h1>
+                <div className="flex flex-1 flex-col gap-4 p-4 mt-[200px]">
+
+                    <h1 className="text-4xl font-bold text-center text-blue-500 ">
+                        Bienvenido al Sistema de Información de EDUCA
+                    </h1>
+
+                    <Image
+                        src="/images/logo.jpeg"
+                        alt="Descripción de la imagen"
+                        width={480}
+                        height={600}
+                        className="w-full h-auto md:h-[200px] object-contain"
+                    />
                 </div>
-                
+
             </SidebarInset>
         </SidebarProvider>
     )

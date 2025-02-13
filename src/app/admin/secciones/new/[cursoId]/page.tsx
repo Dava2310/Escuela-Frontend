@@ -90,8 +90,28 @@ export default function CrearSeccionPage() {
                 console.error(error)
             }
         }
+
+        const fetchCourse = async () => {
+            try {
+                
+                const accessToken = localStorage.getItem("accessToken");
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                };
+
+                const response = await axios.get(`${ip}/api/courses/${cursoId}`, config);
+                form.setValue("codigo", response.data.body.data.codigo + "-");
+
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        fetchCourse();
         fetchTeachers();
-    }, [])
+    }, [cursoId, form])
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {

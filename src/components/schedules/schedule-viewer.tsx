@@ -596,10 +596,10 @@ export default function HorarioViewer() {
                                         .join(", ")}
                                 </dd>
                             </div>
-                            {/* <div>
-                                <dt className="font-medium">Capacidad:</dt>
-                                <dd>{horarioSeleccionado.capacidad || "Sin límite"}</dd>
-                            </div> */}
+                            <div>
+                                <dt className="font-bold">Tipo:</dt>
+                                <dd>{horarioSeleccionado.tipo || "Presencial"}</dd>
+                            </div>
                         </dl>
                     </CardContent>
                 </Card>

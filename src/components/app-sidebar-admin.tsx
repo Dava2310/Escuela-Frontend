@@ -24,6 +24,17 @@ import {
 const data = {
   navMain: [
     {
+      title: "Inicio",
+      url: "#",
+      items: [
+        {
+          title: "Página de Inicio",
+          url: "/admin/dashboard"
+        }
+      ]
+      
+    },
+    {
       title: "Perfil",
       url: "#",
       items: [

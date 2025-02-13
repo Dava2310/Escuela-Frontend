@@ -1,6 +1,6 @@
 "use client"
 
-import useAuthCheck from "../../hooks/useAuthCheck"; // Importa el hook
+import useAuthCheck from "@/app/hooks/useAuthCheck"; // Importa el hook
 import useIsStudent from "@/app/hooks/useIsStudent";
 
 import UserMenu from "@/components/UserMenu";
@@ -21,10 +21,8 @@ import {
 } from "@/components/ui/sidebar"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 
 type Curso = {
     id: number
@@ -46,13 +44,7 @@ export default function Page() {
     // Verifica si el usuario es de tipo estudiante
     useIsStudent();
 
-    const router = useRouter();
-
     const [cursos, setCursos] = useState<Curso[]>([])
-
-    const handleInscripcion = (id: number) => {
-        router.push(`/student/inscripcion/${id}`)
-    }
 
     useEffect(() => {
         const fetchCursos = async () => {
@@ -66,7 +58,7 @@ export default function Page() {
                     },
                 };
 
-                const response = await axios.get(`${ip}/api/courses/student/`, config)
+                const response = await axios.get(`${ip}/api/courses/student/enrolled/`, config)
                 setCursos(response.data.body.data as Curso[])
 
             } catch (error) {
@@ -93,7 +85,7 @@ export default function Page() {
                             </BreadcrumbItem>
                             <BreadcrumbSeparator className="hidden md:block" />
                             <BreadcrumbItem>
-                                <BreadcrumbPage>Todos los Cursos</BreadcrumbPage>
+                                <BreadcrumbPage>Mis Cursos</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
@@ -103,7 +95,7 @@ export default function Page() {
                     <UserMenu />
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4">
-                    <h1 className="text-3xl font-bold mb-6 text-center">Nuestros Cursos</h1>
+                    <h1 className="text-3xl font-bold mb-6 text-center">Mis Cursos</h1>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {cursos.map((curso) => (
                             <Card key={curso.id} className="flex flex-col">
@@ -116,30 +108,6 @@ export default function Page() {
                                 </CardHeader>
                                 <CardContent className="flex-grow">
                                     <p className="text-sm mb-4">{curso.descripcion}</p>
-                                    <div className="flex items-center justify-between">
-                                        <span
-                                            className={`text-sm font-medium ${curso.inscrito === "Aprobada"
-                                                    ? "text-green-600"
-                                                    : curso.inscrito === "En Espera"
-                                                        ? "text-yellow-600"
-                                                        : "text-red-600"
-                                                }`}
-                                        >
-                                            {curso.inscrito === "Aprobada"
-                                                ? "Inscrito"
-                                                : curso.inscrito === "En Espera"
-                                                    ? "En Espera"
-                                                    : "No Inscrito"}
-                                        </span>
-                                        {curso.inscrito === "No Inscrito" && (
-                                            <Button
-                                                onClick={() => handleInscripcion(curso.id)}
-                                                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                                            >
-                                                Inscribirse
-                                            </Button>
-                                        )}
-                                    </div>
                                 </CardContent>
                             </Card>
                         ))}

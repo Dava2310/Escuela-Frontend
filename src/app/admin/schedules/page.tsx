@@ -19,7 +19,6 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-
 import HorarioViewer from "@/components/schedules/schedule-viewer"
 
 export default function Page() {
@@ -58,7 +57,6 @@ export default function Page() {
                 <div className="flex flex-1 flex-col gap-4 p-4">
                     <HorarioViewer/>
                 </div>
-                
             </SidebarInset>
         </SidebarProvider>
     )

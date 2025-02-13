@@ -25,6 +25,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 
+import Image from 'next/image'
+
 const formSchema = z.object({
   email: z.string().email(),
   password: z.string()
@@ -52,7 +54,7 @@ export function LoginForm({
       name: "",
       tipoUsuario: "estudiante" // Tipo de usuario por defecto
     };
-  
+
     try {
       toast.promise(
         axios.post(`${ip}/api/auth/login`, values),
@@ -60,16 +62,16 @@ export function LoginForm({
           loading: 'Cargando...',
           success: (response) => {
             const { accessToken, refreshToken, nombre, tipoUsuario } = response.data.body.data;
-  
+
             localStorage.setItem("accessToken", accessToken);
             localStorage.setItem("refreshToken", refreshToken);
-  
+
             user.name = nombre;
             user.tipoUsuario = tipoUsuario;
 
             localStorage.removeItem("user");
             localStorage.setItem("user", JSON.stringify(user));
-  
+
             // console.log(localStorage.getItem("accessToken"));
             // console.log(localStorage.getItem("refreshToken"));
 
@@ -95,93 +97,94 @@ export function LoginForm({
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden">
-        <CardContent className="grid p-0 md:grid-cols-2">
+    <>
+      <Image
+        src="/images/logo.jpeg"
+        alt="Descripción de la imagen"
+        width={480}
+        height={600}
+        className="w-full h-auto md:h-[200px] object-contain"
+      />
+      <div className={cn("flex flex-col gap-6", className)} {...props}>
 
-          {/* Formulario de Login */}
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 md:p-8">
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col items-center text-center">
-                  <h1 className="text-2xl font-bold">Bienvenido</h1>
-                  <p className="text-balance text-muted-foreground">
-                    Inicia Sesión con tu cuenta
-                  </p>
+        <Card className="overflow-hidden">
+          <CardContent className="grid p-0">
+
+            {/* Formulario de Login */}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 md:p-8">
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-col items-center text-center">
+                    <h1 className="text-2xl font-bold">Bienvenido</h1>
+                    <p className="text-balance text-muted-foreground">
+                      Inicia Sesión con tu cuenta
+                    </p>
+                  </div>
+
+                  {/* Email */}
+                  <div className="grid gap-2">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Correo</FormLabel>
+                          <FormControl>
+                            <Input placeholder="m@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Contraseña */}
+                  <div className="grid gap-2">
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center">
+                            <FormLabel>Contraseña</FormLabel>
+                            <a
+                              href="/recover"
+                              className="ml-auto text-sm underline-offset-2 hover:underline"
+                            >
+                              ¿Olvidaste tu contraseña?
+                            </a>
+                          </div>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full">
+                    Iniciar Sesion
+                  </Button>
+
+                  <div className="text-center text-sm">
+                    ¿No tienes una cuenta?{" "}
+                    <a href="/register" className="underline underline-offset-4">
+                      Regístrate
+                    </a>
+                  </div>
                 </div>
 
-                {/* Email */}
-                <div className="grid gap-2">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Correo</FormLabel>
-                        <FormControl>
-                          <Input placeholder="m@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Contraseña */}
-                <div className="grid gap-2">
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-center">
-                          <FormLabel>Contraseña</FormLabel>
-                          <a
-                            href="/recover"
-                            className="ml-auto text-sm underline-offset-2 hover:underline"
-                          >
-                            ¿Olvidaste tu contraseña?
-                          </a>
-                        </div>
-                        <FormControl>
-                          <Input type="password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <Button type="submit" className="w-full">
-                  Iniciar Sesion
-                </Button>
-
-                <div className="text-center text-sm">
-                ¿No tienes una cuenta?{" "}
-                <a href="/register" className="underline underline-offset-4">
-                  Regístrate
-                </a>
-              </div>
-              </div>
-              
-            </form>
-          </Form>
-
-
-          <div className="relative hidden bg-muted md:block">
-            {/* <img
-              src="/placeholder.svg"
-              alt="Image"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-            /> */}
-          </div>
-        </CardContent>
-      </Card>
-      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+        <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
+          By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
+          and <a href="#">Privacy Policy</a>.
+        </div>
+        <Toaster richColors closeButton expand />
       </div>
-      <Toaster richColors closeButton expand />
-    </div>
+    </>
   )
 }

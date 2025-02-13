@@ -1,6 +1,6 @@
 "use client"
 
-import useAuthCheck from "../../hooks/useAuthCheck"; // Importa el hook
+import useAuthCheck from "@/app/hooks/useAuthCheck";
 import useIsStudent from "@/app/hooks/useIsStudent";
 
 import UserMenu from "@/components/UserMenu";
@@ -20,15 +20,29 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-import Image from "next/image";
+import { useEffect } from "react";
 
-export default function Page() {
+// Librerias para la tabla de datos
+import { DataTable } from "./data-table";
+import { useInscripciones, InscripcionesProvider } from "./InscriptionsContext"
+import { columns } from "./columns"
+
+const ListInscripcionesByStudent = () => {
 
 	// Verifica si el usuario está autenticado
 	useAuthCheck();
 
 	// Verifica si el usuario es de tipo estudiante
 	useIsStudent();
+
+	const { inscripciones, fetchInscripciones } = useInscripciones();
+
+	useEffect(() => {
+		// Asegúrate de que se ejecute solo en el cliente
+		if (typeof window !== 'undefined') {
+			fetchInscripciones(); // Obtiene los profesores al cargar la página
+		}
+	}, [fetchInscripciones])
 
 	return (
 		<SidebarProvider>
@@ -41,12 +55,12 @@ export default function Page() {
 						<BreadcrumbList>
 							<BreadcrumbItem className="hidden md:block">
 								<BreadcrumbLink href="#">
-									Inicio
+									Inscripciones
 								</BreadcrumbLink>
 							</BreadcrumbItem>
 							<BreadcrumbSeparator className="hidden md:block" />
 							<BreadcrumbItem>
-								<BreadcrumbPage>Dashboard</BreadcrumbPage>
+								<BreadcrumbPage>Mis Inscripciones</BreadcrumbPage>
 							</BreadcrumbItem>
 						</BreadcrumbList>
 					</Breadcrumb>
@@ -55,20 +69,24 @@ export default function Page() {
 					</div>
 					<UserMenu />
 				</header>
-				<div className="flex flex-1 flex-col gap-4 p-4 mt-[200px]">
-					<h1 className="text-4xl font-bold text-center text-blue-500 ">
-						Bienvenido al Sistema de Información de EDUCA
+				<div className="flex flex-1 flex-col gap-4 p-4">
+					<h1 className="text-4xl font-bold text-center text-blue-500">
+						Lista de Inscripciones
 					</h1>
 
-					<Image
-						src="/images/logo.jpeg"
-						alt="Descripción de la imagen"
-						width={480}
-						height={600}
-						className="w-full h-auto md:h-[200px] object-contain"
-					/>
+					<div className="container mx-auto">
+						<DataTable columns={columns} data={inscripciones} />
+					</div>
 				</div>
 			</SidebarInset>
 		</SidebarProvider>
+	)
+}
+
+export default function Page() {
+	return (
+		<InscripcionesProvider>
+			<ListInscripcionesByStudent />
+		</InscripcionesProvider>
 	)
 }

@@ -32,7 +32,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import axios from "axios";
 import ip from "@/app/constants/constants";
-
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 // Definición del esquema de validación para el formulario de sección
 const seccionSchema = z.object({
     id: z.number(),
@@ -45,12 +46,6 @@ const seccionSchema = z.object({
 // Tipos
 type Seccion = z.infer<typeof seccionSchema>
 type Profesor = { id: string; nombre: string }
-
-const profesoresPrueba: Profesor[] = [
-    { id: "1", nombre: "Ana García" },
-    { id: "2", nombre: "Carlos Pérez" },
-    { id: "3", nombre: "Laura Martínez" },
-]
 
 // Funcionalidad para los estudiantes
 import { DataTable } from "./data-table";
@@ -71,6 +66,7 @@ const ListSecciones = () => {
 
     // Carga de las secciones
     const [secciones, setSecciones] = useState<Seccion[]>([])
+    const [profesores, setProfesores] = useState<Profesor[]>([])
 
     useEffect(() => {
 
@@ -91,8 +87,26 @@ const ListSecciones = () => {
             }
         }
 
-        fetchSecciones();
+        const fetchTeachers = async () => {
+            try {
+                const accessToken = localStorage.getItem("accessToken");
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                };
 
+                const response = await axios.get(`${ip}/api/teachers/`, config)
+                setProfesores(response.data.body.data as Profesor[]);
+
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        fetchTeachers();
+        fetchSecciones();
+        
     }, [cursoId])
 
 
@@ -111,16 +125,39 @@ const ListSecciones = () => {
         },
     })
 
-    const onSubmit = (values: Seccion) => {
+    const onSubmit = async (values: Seccion) => {
         if (seccionSeleccionada) {
-            // Actualizar sección existente
-            setSecciones(secciones.map((s) => (s.id === values.id ? values : s)))
-            setSeccionSeleccionada(values)
+            const valores = {
+                codigo: values.codigo,
+                capacidad: values.capacidad,
+                salon: values.salon,
+                profesorId: values.profesorId
+            }
+
+            try {
+                
+                const accessToken = localStorage.getItem("accessToken");
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                };
+
+                const response = await axios.patch(`${ip}/api/secciones/${values.id}`, valores, config);
+                toast.success(response.data.body.message)
+
+                // Actualizar sección existente
+                setSecciones(secciones.map((s) => (s.id === values.id ? values : s)))
+                setSeccionSeleccionada(values)
+
+            } catch (error) {
+                console.error(error);
+            }
         }
     }
 
     const seleccionarSeccion = (seccion: Seccion | null) => {
-        console.log("Sección seleccionada:", seccion); // Verifica si la sección tiene los datos correctos
+        // console.log("Sección seleccionada:", seccion); // Verifica si la sección tiene los datos correctos
         setSeccionSeleccionada(seccion)
         if (seccion) {
             fetchEstudiantes(seccion.id)
@@ -166,8 +203,8 @@ const ListSecciones = () => {
                                 const selectedId = Number(value); // Convierte el valor a number
                                 const selectedSeccion = secciones.find((s) => s.id === selectedId); // Busca la sección
 
-                                console.log("Valor seleccionado:", value); // Verifica el valor
-                                console.log("Sección encontrada:", selectedSeccion); // Verifica la sección encontrada
+                                // console.log("Valor seleccionado:", value); // Verifica el valor
+                                // console.log("Sección encontrada:", selectedSeccion); // Verifica la sección encontrada
 
                                 seleccionarSeccion(selectedSeccion || null); // Llama a la función para actualizar la sección seleccionada
                             }}>
@@ -237,15 +274,15 @@ const ListSecciones = () => {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Profesor</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <Select onValueChange={field.onChange} value={field.value}>
                                                     <FormControl>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Seleccione un profesor" />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
-                                                        {profesoresPrueba.map((profesor) => (
-                                                            <SelectItem key={profesor.id} value={profesor.id}>
+                                                        {profesores.map((profesor) => (
+                                                            <SelectItem key={profesor.id.toString()} value={profesor.id.toString()}>
                                                                 {profesor.nombre}
                                                             </SelectItem>
                                                         ))}
@@ -274,7 +311,7 @@ const ListSecciones = () => {
                         </div>
                     </div>
                 </div>
-
+                <Toaster richColors closeButton expand />
             </SidebarInset>
         </SidebarProvider>
     )

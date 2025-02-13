@@ -98,8 +98,8 @@ export const columns: ColumnDef<Inscripcion>[] = [
                     fetchInscripciones();
                     toast.success("Inscripción aprobada correctamente.");
 
-                } catch (error) {
-                    
+                } catch (error: any) {
+                    toast.error(error.response.data.body.message);
                 }
             }, [fetchInscripciones, inscripcion.id])
 
@@ -118,9 +118,10 @@ export const columns: ColumnDef<Inscripcion>[] = [
                     fetchInscripciones();
                     toast.success("Inscripción desaprobada correctamente.");
 
-                } catch (error) {
-                    
+                } catch (error: any) {
+                    toast.error(error.response.data.body.message);
                 }
+
             }, [fetchInscripciones, inscripcion.id])
 
             const handleDeleteClick = useCallback(async () => {
@@ -142,6 +143,8 @@ export const columns: ColumnDef<Inscripcion>[] = [
                     
                 } catch (error: any) {
                     
+                    toast.error(error.response.data.body.message);
+
                 } finally {
                     setIsDialogOpen(false)
                 }

@@ -42,7 +42,8 @@ interface Curso {
     categoria: string
     codigo: string
     estado: 'activo' | 'inactivo'
-    matricula: number
+    matricula: number,
+    cantidadSecciones: number
 }
 import Link from "next/link"
 import ip from "../../constants/constants.js";
@@ -64,9 +65,9 @@ export default function Page() {
 
     const cursosFiltrados = cursos.filter(curso =>
         curso.nombre.toLowerCase().includes(busqueda.toLowerCase()) &&
-        (filtroCategoria === '' || curso.categoria === filtroCategoria) &&
+        (filtroCategoria === '' || filtroCategoria === 'todas' || curso.categoria === filtroCategoria) &&
         (filtroEstado === '' || curso.estado === filtroEstado)
-    )
+    );
 
     const handleEditarCurso = (cursoActualizado: Curso) => {
         setCursos(cursos.map(curso =>
@@ -185,6 +186,7 @@ export default function Page() {
                                     <p><strong>Codigo:</strong> {curso.codigo}</p>
                                     <p><strong>Categoría:</strong> {curso.categoria}</p>
                                     <p><strong>Estudiantes Inscritos:</strong> {curso.matricula}</p>
+                                    <p><strong>Secciones del Curso:</strong> {curso.cantidadSecciones}</p>
                                     <Badge variant={curso.estado === 'activo' ? 'default' : 'secondary'} className="mt-2">
                                         {curso.estado === 'activo' ? 'Activo' : 'Inactivo'}
                                     </Badge>

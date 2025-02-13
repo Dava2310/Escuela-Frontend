@@ -28,6 +28,7 @@ interface Curso {
     codigo: string
     estado: 'activo' | 'inactivo'
     matricula: number
+    cantidadSecciones: number
 }
 
 import ip from "../../app/constants/constants.js";

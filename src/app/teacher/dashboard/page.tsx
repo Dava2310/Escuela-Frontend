@@ -63,7 +63,8 @@ type Seccion = {
 	}
 	capacidad: number
 	estudiantesInscritos: number
-	estudiantes: Estudiante[]
+	estudiantes: Estudiante[],
+	salon: string
 }
 
 // // Datos de prueba
@@ -231,6 +232,9 @@ const TeacherDashboard = () => {
 										</p>
 										<p>
 											<strong>Capacidad:</strong> {seccionSeleccionada.capacidad}
+										</p>
+										<p>
+											<strong>Aula:</strong> {seccionSeleccionada.salon}
 										</p>
 										<p>
 											<strong>Estudiantes Inscritos:</strong> {seccionSeleccionada.estudiantesInscritos}

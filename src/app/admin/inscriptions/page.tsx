@@ -24,7 +24,7 @@ import { useEffect } from "react";
 
 // Librerias para la tabla de datos
 import { DataTable } from "./data-table";
-import { useInscripciones, InscripcionesProvider} from "./InscriptionsContext"
+import { useInscripciones, InscripcionesProvider } from "./InscriptionsContext"
 import { columns } from "./columns"
 
 const ListInscripciones = () => {
@@ -33,7 +33,7 @@ const ListInscripciones = () => {
     useAuthCheck();
 
     // Verifica si el usuario es de tipo administrador
-    useIsAdmin(); 
+    useIsAdmin();
 
     const { inscripciones, fetchInscripciones } = useInscripciones();
 
@@ -75,8 +75,8 @@ const ListInscripciones = () => {
                     </h1>
 
                     <div className="container mx-auto">
-                <DataTable columns={columns} data={inscripciones} />
-            </div>
+                        <DataTable columns={columns} data={inscripciones} />
+                    </div>
                 </div>
             </SidebarInset>
         </SidebarProvider>
@@ -88,4 +88,5 @@ export default function Page() {
         <InscripcionesProvider>
             <ListInscripciones />
         </InscripcionesProvider>
-    )}
+    )
+}
