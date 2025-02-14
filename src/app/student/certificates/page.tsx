@@ -47,9 +47,38 @@ export default function Page() {
 
     const [certificados, setCertificados] = useState<CertificadoEstudiante[]>([])
 
-    const handleImprimirCertificado = (certificadoId: string) => {
+    const handleImprimirCertificado = async (certificadoId: string) => {
         // Lógica para imprimir el certificado
         console.log(`Imprimir certificado ${certificadoId}`)
+
+        const accessToken = localStorage.getItem("accessToken");
+
+        try {
+            const response = await fetch(`${ip}/api/reportCertificates/${certificadoId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json' // Establece el tipo de contenido
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const blob = await response.blob(); // Obtiene la respuesta como Blob
+
+            // Crear un enlace de descarga para el PDF
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'Certificado.pdf'); // Nombre del archivo
+            document.body.appendChild(link);
+            link.click(); // Simula un clic en el enlace para descargar
+            link.remove(); // Elimina el enlace después de la descarga
+        } catch (error) {
+            console.error("Error al descargar el PDF", error);
+        }
     }
 
     useEffect(() => {
